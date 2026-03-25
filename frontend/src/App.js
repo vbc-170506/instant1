@@ -14,6 +14,7 @@ import ViewRequests from './pages/ViewRequests/ViewRequests';
 import Proposals from './pages/Proposals/Proposals';
 import Chat from './pages/Chat/Chat';
 import Payments from './pages/Payments/Payments';
+import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
@@ -94,6 +95,12 @@ const AppRoutes = () => (
       <Route path="/payments" element={
         <ProtectedRoute>
           <Payments />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/dashboard/admin" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminDashboard />
         </ProtectedRoute>
       } />
 

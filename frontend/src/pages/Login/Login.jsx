@@ -13,18 +13,27 @@ const Login = () => {
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const user = await login(formData.email, formData.password);
-      navigate(user.role === 'business' ? '/dashboard/business' : '/dashboard/agency');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+  setError('');
+  setLoading(true);
+
+  try {
+    const user = await login(formData.email, formData.password);
+
+    if (user.role === 'admin') {
+      navigate('/dashboard/admin');
+    } else if (user.role === 'business') {
+      navigate('/dashboard/business');
+    } else {
+      navigate('/dashboard/agency');
     }
-  };
+
+  } catch (err) {
+    setError(err.response?.data?.message || 'Login failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 pt-16">

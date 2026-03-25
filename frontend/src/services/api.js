@@ -71,4 +71,13 @@ export const paymentsAPI = {
   getHistory: () => api.get('/payments/history'),
 };
 
+// ─── Admin ───────────────────────────────────────────────────
+export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
+  getAllUsers: () => api.get('/admin/users'),
+  getAgencies: (params) => api.get('/admin/agencies', { params }),
+  approveAgency: (id) => api.put(`/admin/agencies/approve/${id}`),
+  rejectAgency: (id) => api.put(`/admin/agencies/reject/${id}`),
+};
+
 export default api;

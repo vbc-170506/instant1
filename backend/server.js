@@ -13,6 +13,10 @@ const requestRoutes = require('./routes/requestRoutes');
 const proposalRoutes = require('./routes/proposalRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+// Add this import at the top with other route imports
+const adminRoutes = require('./routes/adminRoutes');
+
+
 
 // Connect to MongoDB
 connectDB();
@@ -57,7 +61,8 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/proposals', proposalRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/payments', paymentRoutes);
-
+// Add this line with the other app.use() route registrations
+app.use('/api/admin', adminRoutes);
 // Health check
 app.get('/api/health', (_req, res) => {
   res.status(200).json({ success: true, message: 'Instant API is running 🚀' });

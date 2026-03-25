@@ -39,7 +39,9 @@ const getAllRequests = async (req, res) => {
     } else if (req.user.role === 'agency') {
       query.status = status || 'open';
     }
-
+    console.log("🔥 API HIT");
+    console.log("User:", req.user);
+console.log("Query:", query);
     if (category) query.category = category;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -73,6 +75,11 @@ const getRequestById = async (req, res) => {
 
     if (!request) {
       return res.status(404).json({ success: false, message: 'Request not found.' });
+    }
+
+    // 🔐 ADD THIS CHECK
+    if (req.user.role === 'business' && request.businessId.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized.' });
     }
 
     res.status(200).json({ success: true, request });

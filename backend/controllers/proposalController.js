@@ -8,6 +8,13 @@ const Message = require('../models/Message');
 // @access  Private (Agency only)
 const sendProposal = async (req, res) => {
   try {
+    // 🔐 BLOCK UNAPPROVED AGENCIES
+if (req.user.role === 'agency' && !req.user.isApproved) {
+  return res.status(403).json({
+    success: false,
+    message: 'Your account is not approved by admin.'
+  });
+}
     const { requestId, price, message, estimatedDays } = req.body;
 
     // Check if request exists and is open

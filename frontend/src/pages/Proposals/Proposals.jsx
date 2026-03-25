@@ -114,55 +114,62 @@ const Proposals = () => {
             )}
           </div>
 
-          {/* Agency submit proposal form */}
-          {user.role === 'agency' && requestId && (
-            <div className="mb-6">
-              {!showForm ? (
-                <button onClick={() => setShowForm(true)}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 text-sm">
-                  + Submit Proposal for This Job
-                </button>
-              ) : (
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
-                  <h2 className="font-semibold text-gray-900 mb-4">Submit Your Proposal</h2>
-                  {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{error}</div>}
-                  <form onSubmit={handleSubmitProposal} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Your Price (₹) *</label>
-                        <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} required min={1}
-                          className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="45000" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Days *</label>
-                        <input type="number" value={formData.estimatedDays} onChange={e => setFormData({ ...formData, estimatedDays: e.target.value })} required min={1}
-                          className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="30" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Cover Message *</label>
-                      <textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} required rows={4}
-                        className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                        placeholder="Why is your agency the best fit for this job? Highlight your experience..." />
-                    </div>
-                    <div className="flex space-x-3">
-                      <button type="button" onClick={() => setShowForm(false)}
-                        className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50">
-                        Cancel
-                      </button>
-                      <button type="submit" disabled={submitting}
-                        className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center">
-                        {submitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" /> : null}
-                        Submit Proposal
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
+          {/* Agency approval warning */}
+{user.role === 'agency' && !user.isApproved && (
+  <div className="mb-6 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-xl text-sm">
+    Your account is not approved by admin yet. You cannot submit proposals.
+  </div>
+)}
+
+{/* Agency submit proposal form */}
+{user.role === 'agency' && user.isApproved && requestId && (
+  <div className="mb-6">
+    {!showForm ? (
+      <button onClick={() => setShowForm(true)}
+        className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 text-sm">
+        + Submit Proposal for This Job
+      </button>
+    ) : (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+        <h2 className="font-semibold text-gray-900 mb-4">Submit Your Proposal</h2>
+        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{error}</div>}
+        <form onSubmit={handleSubmitProposal} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Your Price (₹) *</label>
+              <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} required min={1}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="45000" />
             </div>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Days *</label>
+              <input type="number" value={formData.estimatedDays} onChange={e => setFormData({ ...formData, estimatedDays: e.target.value })} required min={1}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="30" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cover Message *</label>
+            <textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} required rows={4}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              placeholder="Why is your agency the best fit for this job? Highlight your experience..." />
+          </div>
+          <div className="flex space-x-3">
+            <button type="button" onClick={() => setShowForm(false)}
+              className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" disabled={submitting}
+              className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center">
+              {submitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" /> : null}
+              Submit Proposal
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
+  </div>
+)}
 
           {/* Proposals list */}
           {loading ? (
