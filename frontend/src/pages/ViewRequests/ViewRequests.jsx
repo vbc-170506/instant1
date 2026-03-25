@@ -123,7 +123,7 @@ const ViewRequests = () => {
                     <div className="flex items-center space-x-2 ml-4">
                       {user?.role === 'agency' && req.status === 'open' && (
                         <Link
-                          to={`/requests/${req._id}`}
+                          to={`/proposals?requestId=${req._id}`}
                           className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
                         >
                           View & Apply

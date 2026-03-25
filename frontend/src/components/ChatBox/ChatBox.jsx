@@ -12,7 +12,6 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
-  // Scroll to latest message
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -20,6 +19,7 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
   // Load initial messages
   useEffect(() => {
     if (!conversationId) return;
+
     const loadMessages = async () => {
       try {
         setLoading(true);
@@ -31,17 +31,22 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
         setLoading(false);
       }
     };
+
     loadMessages();
   }, [conversationId]);
 
-  // Socket event listeners
+  // Socket events
   useEffect(() => {
     if (!socket || !conversationId) return;
 
     socket.emit('conversation:join', conversationId);
 
     socket.on('message:receive', (message) => {
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => {
+        // ✅ prevent duplicates
+        if (prev.some((m) => m._id === message._id)) return prev;
+        return [...prev, message];
+      });
     });
 
     socket.on('typing:start', ({ userId }) => {
@@ -60,47 +65,46 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
     };
   }, [socket, conversationId, user.id]);
 
-  useEffect(() => { scrollToBottom(); }, [messages]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleTyping = () => {
     socket?.emit('typing:start', { conversationId, userId: user.id });
+
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       socket?.emit('typing:stop', { conversationId, userId: user.id });
     }, 1500);
   };
 
-  const handleSend = async (e) => {
+  // ✅ FIXED SEND FUNCTION
+  const handleSend = (e) => {
     e.preventDefault();
     const content = input.trim();
     if (!content) return;
 
     setInput('');
 
-    // Emit via socket (socket.js saves to DB)
+    // ✅ ONLY socket emit (NO optimistic update)
     socket?.emit('message:send', {
       senderId: user.id,
       receiverId,
       content,
       conversationId,
     });
-
-    // Optimistic update (socket will confirm)
-    const optimistic = {
-      _id: Date.now().toString(),
-      senderId: { _id: user.id, name: user.name },
-      content,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, optimistic]);
   };
 
   const formatTime = (dateStr) => {
-    return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(dateStr).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      
       {/* Header */}
       <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex items-center space-x-3">
         <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center font-bold">
@@ -108,7 +112,9 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
         </div>
         <div>
           <p className="font-semibold">{receiverName || 'Chat'}</p>
-          <p className="text-xs text-blue-100">{isTyping ? 'Typing...' : 'Online'}</p>
+          <p className="text-xs text-blue-100">
+            {isTyping ? 'Typing...' : 'Online'}
+          </p>
         </div>
       </div>
 
@@ -125,9 +131,16 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
           </div>
         ) : (
           messages.map((msg) => {
-            const isOwn = msg.senderId?._id === user.id || msg.senderId === user.id;
+            const isOwn =
+              msg.senderId?._id === user.id || msg.senderId === user.id;
+
             return (
-              <div key={msg._id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+              <div
+                key={msg._id}
+                className={`flex ${
+                  isOwn ? 'justify-end' : 'justify-start'
+                }`}
+              >
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl ${
                     isOwn
@@ -135,8 +148,12 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
                       : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-sm'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-400'}`}>
+                  <p className="text-sm">{msg.content}</p>
+                  <p
+                    className={`text-xs mt-1 ${
+                      isOwn ? 'text-blue-200' : 'text-gray-400'
+                    }`}
+                  >
                     {formatTime(msg.createdAt)}
                   </p>
                 </div>
@@ -144,33 +161,42 @@ const ChatBox = ({ socket, receiverId, receiverName, conversationId }) => {
             );
           })
         )}
+
         {isTyping && (
           <div className="flex justify-start">
             <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
               </div>
             </div>
           </div>
         )}
+
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-gray-200 bg-white flex space-x-3">
+      <form
+        onSubmit={handleSend}
+        className="p-4 border-t border-gray-200 bg-white flex space-x-3"
+      >
         <input
           type="text"
           value={input}
-          onChange={(e) => { setInput(e.target.value); handleTyping(); }}
+          onChange={(e) => {
+            setInput(e.target.value);
+            handleTyping();
+          }}
           placeholder="Type a message..."
-          className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+
         <button
           type="submit"
           disabled={!input.trim()}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-4 py-2.5 rounded-xl text-sm"
         >
           Send
         </button>

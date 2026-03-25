@@ -7,10 +7,10 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 
 const AgencyDashboard = () => {
   const { user } = useAuth();
+  console.log('AgencyDashboard render - user:', user);
   const [openRequests, setOpenRequests] = useState([]);
   const [myProposals, setMyProposals] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -44,7 +44,6 @@ const AgencyDashboard = () => {
       </span>
     );
   };
-
   return (
     <div className="flex min-h-screen bg-gray-50 pt-16">
       <Sidebar />

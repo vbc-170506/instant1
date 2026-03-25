@@ -1,6 +1,7 @@
 // controllers/proposalController.js - Proposal management
 const Proposal = require('../models/Proposal');
 const ServiceRequest = require('../models/ServiceRequest');
+const Message = require('../models/Message');
 
 // @desc    Send a proposal for a service request
 // @route   POST /api/proposals/send
@@ -32,7 +33,22 @@ const sendProposal = async (req, res) => {
 
     // Increment proposal count on request
     await ServiceRequest.findByIdAndUpdate(requestId, { $inc: { proposalCount: 1 } });
+    // 🔥 CREATE FIRST MESSAGE (VERY IMPORTANT)
 
+const businessId = request.businessId;
+const agencyId = proposal.agencyId;
+
+// same logic as messageController
+const conversationId = [businessId.toString(), agencyId.toString()]
+  .sort()
+  .join('_');
+
+await Message.create({
+  senderId: businessId,
+  receiverId: agencyId,
+  conversationId,
+  content: "Chat started"
+});
     const populated = await proposal.populate('agencyId', 'name email');
     res.status(201).json({ success: true, message: 'Proposal submitted.', proposal: populated });
   } catch (error) {
