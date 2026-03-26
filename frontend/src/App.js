@@ -1,6 +1,6 @@
 // App.js - Main application router with protected routes
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Pages
@@ -15,11 +15,32 @@ import Proposals from './pages/Proposals/Proposals';
 import Chat from './pages/Chat/Chat';
 import Payments from './pages/Payments/Payments';
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
+import {
+  ServiceSelectionPage,
+  ServiceListPage,
+  BookingFormPage,
+} from './pages/ServiceSelection/ServiceSelectionPage';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
 
-// Protected route wrapper
+// ─── Service page wrappers (read URL params and pass as props) ─
+const ServiceListPageWrapper = () => {
+  const { serviceType } = useParams();
+  return <ServiceListPage serviceType={serviceType} />;
+};
+
+const BookingFormPageWrapper = () => {
+  const [searchParams] = useSearchParams();
+  return (
+    <BookingFormPage
+      serviceType={searchParams.get('service_type')}
+      service={searchParams.get('service')}
+    />
+  );
+};
+
+// ─── Protected route wrapper ───────────────────────────────────
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
 
@@ -40,7 +61,7 @@ const ProtectedRoute = ({ children, roles }) => {
   return children;
 };
 
-// Public-only route (redirect logged-in users)
+// ─── Public-only route (redirect logged-in users) ──────────────
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -48,14 +69,21 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// ─── All routes ────────────────────────────────────────────────
 const AppRoutes = () => (
   <>
     <Navbar />
     <Routes>
+
       {/* Public */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+      {/* Service Selection (public — no login required) */}
+      <Route path="/services" element={<ServiceSelectionPage />} />
+      <Route path="/services/:serviceType" element={<ServiceListPageWrapper />} />
+      <Route path="/booking" element={<BookingFormPageWrapper />} />
 
       {/* Business routes */}
       <Route path="/dashboard/business" element={
@@ -76,7 +104,7 @@ const AppRoutes = () => (
         </ProtectedRoute>
       } />
 
-      {/* Shared routes */}
+      {/* Shared protected routes */}
       <Route path="/requests" element={
         <ProtectedRoute>
           <ViewRequests />
@@ -98,13 +126,14 @@ const AppRoutes = () => (
         </ProtectedRoute>
       } />
 
+      {/* Admin */}
       <Route path="/dashboard/admin" element={
         <ProtectedRoute roles={['admin']}>
           <AdminDashboard />
         </ProtectedRoute>
       } />
 
-      {/* Catch all */}
+      {/* 404 */}
       <Route path="*" element={
         <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-16">
           <div className="text-center">
@@ -114,6 +143,7 @@ const AppRoutes = () => (
           </div>
         </div>
       } />
+
     </Routes>
   </>
 );

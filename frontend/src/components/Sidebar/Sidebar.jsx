@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const businessLinks = [
   { path: '/dashboard/business', label: 'Overview', icon: '🏠' },
-  { path: '/post-request', label: 'Post a Job', icon: '➕' },
+  { path: '/services', label: 'Post a Job', icon: '➕' },
   { path: '/requests', label: 'My Requests', icon: '📋' },
   { path: '/proposals', label: 'Proposals', icon: '📨' },
   { path: '/chat', label: 'Messages', icon: '💬' },
