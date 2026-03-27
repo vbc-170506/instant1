@@ -18,11 +18,12 @@ const Proposals = () => {
   const [formData, setFormData] = useState({ price: '', message: '', estimatedDays: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-
+  
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
+        
         if (user.role === 'business' && requestId) {
           const [propRes, reqRes] = await Promise.all([
             proposalsAPI.getForRequest(requestId),
@@ -38,9 +39,12 @@ const Proposals = () => {
             setRequest(rd.request);
           }
         }
-      } catch (err) {
-        console.error(err);
-      } finally {
+      } 
+        catch (err) {
+  console.error("ERROR:", err.response?.data || err.message);
+  alert(err.response?.data?.message || err.message);
+}
+       finally {
         setLoading(false);
       }
     };
